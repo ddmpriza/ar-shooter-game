@@ -11,7 +11,8 @@ public class ObjectSpawner : MonoBehaviour
     void Update()
     {
         // Η μέθοδος Input.GetMouseButtonDown(0) ελέγχει αν ο παίκτης έχει κάνει κλικ με το αριστερό κουμπί του ποντικιού (0 αντιστοιχεί στο αριστερό κουμπί).
-        if (Input.GetMouseButtonDown(0))
+        // Επιπλέον, ελέγχει αν το παιχνίδι δεν έχει ξεκινήσει (gameStarted == false) για να επιτρέψει τη δημιουργία κύβων μόνο πριν ξεκινήσει το παιχνίδι.
+        if (Input.GetMouseButtonDown(0) && !GameStateManager.instance.gameStarted)
         {
             // Η μέθοδος Camera.main.ScreenPointToRay μετατρέπει τη θέση του ποντικιού στην οθόνη σε ένα Ray που ξεκινάει από την κάμερα και κατευθύνεται προς τη θέση του ποντικιού στο κόσμο.
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
