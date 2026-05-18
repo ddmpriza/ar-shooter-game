@@ -1326,6 +1326,7 @@ GameObject:
   - component: {fileID: 1472258259}
   - component: {fileID: 1472258261}
   - component: {fileID: 1472258260}
+  - component: {fileID: 1472258262}
   m_Layer: 5
   m_Name: GameStartedText
   m_TagString: Untagged
@@ -1452,6 +1453,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1472258258}
   m_CullTransparentMesh: 1
+--- !u!114 &1472258262
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1472258258}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ceef40f04b7ea84abf165bd02c5c7f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FloatingText
+  moveSpeed: 50
+  lifeTime: 2
 --- !u!1 &1908476104
 GameObject:
   m_ObjectHideFlags: 0

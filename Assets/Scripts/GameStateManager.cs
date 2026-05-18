@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 // Script υπεύθυνο για τη διαχείριση της κατάστασης του παιχνιδιού
 public class GameStateManager : MonoBehaviour
@@ -50,4 +51,12 @@ public class GameStateManager : MonoBehaviour
 
         Debug.Log("Game Ended!");
     }
+
+    public void RestartGame()
+    {
+    // Ξαναφορτώνει τη σκηνή
+    SceneManager.LoadScene(
+        SceneManager.GetActiveScene().buildIndex
+    );
+}
 }

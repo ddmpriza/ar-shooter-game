@@ -4,18 +4,23 @@
 [Bb]uild/
 [Bb]uilds/
 [Ll]ogs/
-MemoryCaptures/
-
 UserSettings/
 
-.vs/
+MemoryCaptures/
+
+*.apk
+*.aab
+
+*_BackUpThisFolder_ButDontShipItWithYourGame/
+
+.DS_Store
+Thumbs.db
+
+.vscode/
 .idea/
-.gradle/
 
 *.csproj
 *.unityproj
 *.sln
 *.suo
 *.tmp
-*.user
-*.userprefs
