@@ -23,6 +23,18 @@ public class PlaceObject : MonoBehaviour
         Touch touch = Input.GetTouch(0);
         if (touch.phase != TouchPhase.Began) return;
 
+        // Πρώτα έλεγχος αν το tap έγινε πάνω σε υπάρχον κυβάκι
+        Ray ray = Camera.main.ScreenPointToRay(touch.position);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit))
+        {
+            if (hit.collider.gameObject.CompareTag("Target"))
+            {
+                // Tap σε κυβάκι - αποφυγή τοποθέτησης νέου object
+                return;
+            }
+        }
+
         if (raycastManager.Raycast(touch.position, hits, TrackableType.PlaneWithinPolygon))
         {
             Pose hitPose = hits[0].pose;
