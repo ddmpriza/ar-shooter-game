@@ -401,6 +401,7 @@ GameObject:
   - component: {fileID: 76566211}
   - component: {fileID: 76566210}
   - component: {fileID: 76566209}
+  - component: {fileID: 76566213}
   m_Layer: 0
   m_Name: XR Origin
   m_TagString: Untagged
@@ -439,8 +440,8 @@ MonoBehaviour:
   <trackablesChanged>k__BackingField:
     m_PersistentCalls:
       m_Calls: []
-  m_PlanePrefab: {fileID: 0}
-  m_DetectionMode: -1
+  m_PlanePrefab: {fileID: 5537004702293320855, guid: 9ed1a8552fd7bc642be362fd711ce425, type: 3}
+  m_DetectionMode: 1
 --- !u!114 &76566211
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -466,7 +467,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 76566208}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -474,6 +475,20 @@ Transform:
   - {fileID: 1942303431}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &76566213
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 76566208}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b669738c1541cb14c98b0906fef29e66, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlaceObject
+  raycastManager: {fileID: 76566209}
+  objectToPlace: {fileID: 4366452643835737105, guid: cf0e07be4798eb24ab3676320e7e7cd9, type: 3}
 --- !u!1 &174343802
 GameObject:
   m_ObjectHideFlags: 0
@@ -679,7 +694,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 180089662}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 816b289ef451e094f9ae174fb4cf8db0, type: 3}
   m_Name: 
@@ -722,8 +737,8 @@ Camera:
   m_GameObject: {fileID: 180089662}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 2
-  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 1}
+  m_ClearFlags: 4
+  m_BackGroundColor: {r: 0.01886791, g: 0.017764315, b: 0.017764315, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -745,11 +760,11 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.1
-  far clip plane: 20
+  far clip plane: 1000
   field of view: 60
   orthographic: 0
   orthographic size: 5
-  m_Depth: 0
+  m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -1485,7 +1500,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!64 &1908476105
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -1837,6 +1852,7 @@ GameObject:
   - component: {fileID: 2145237582}
   - component: {fileID: 2145237583}
   - component: {fileID: 2145237584}
+  - component: {fileID: 2145237585}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1914,14 +1930,28 @@ MonoBehaviour:
   gameStarted: 0
   startButton: {fileID: 2130631772}
   gameStartedText: {fileID: 1472258258}
+--- !u!114 &2145237585
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2145237579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b669738c1541cb14c98b0906fef29e66, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlaceObject
+  raycastManager: {fileID: 76566209}
+  objectToPlace: {fileID: 4366452643835737105, guid: cf0e07be4798eb24ab3676320e7e7cd9, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 410087041}
   - {fileID: 76566212}
   - {fileID: 174343805}
+  - {fileID: 326112890}
+  - {fileID: 410087041}
   - {fileID: 1908476108}
   - {fileID: 2145237581}
-  - {fileID: 326112890}
   - {fileID: 2119998078}

@@ -11,7 +11,8 @@ MemoryCaptures/
 *.apk
 *.aab
 
-*_BackUpThisFolder_ButDontShipItWithYourGame/
+*_BurstDebugInformation*
+*_BackUpThisFolder_ButDontShipItWithYourGame*
 
 .DS_Store
 Thumbs.db
