@@ -38,7 +38,8 @@ public class PlaceObject : MonoBehaviour
         if (raycastManager.Raycast(touch.position, hits, TrackableType.PlaneWithinPolygon))
         {
             Pose hitPose = hits[0].pose;
-            Instantiate(objectToPlace, hitPose.position, hitPose.rotation);
+            Vector3 spawnPos = hitPose.position + Vector3.up * 0.1f;
+            Instantiate(objectToPlace, spawnPos, hitPose.rotation);
         }
     }
 }

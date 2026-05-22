@@ -23,7 +23,7 @@ public class ScaleObject : MonoBehaviour
         // Swipe για scale
         if (touch.phase == TouchPhase.Moved && selectedObject != null)
         {
-            float delta = touch.deltaPosition.y * scaleSpeed * Time.deltaTime * 60f;
+            float delta = -touch.deltaPosition.y * scaleSpeed * Time.deltaTime * 60f;
             float currentScale = selectedObject.transform.localScale.x;
             float newScale = Mathf.Clamp(currentScale + delta, minScale, maxScale);
             selectedObject.transform.localScale = Vector3.one * newScale;
