@@ -28,4 +28,5 @@ Thumbs.db
 *.tmp
 
 Assets/Settings/ARCoreConfig.asset
-Assets/Settings/ARCoreConfig.asset.meta
+Assets/Settings/ARCoreConfig.asset.metaProjectSettings/ARCoreExtensionsProjectSettings.json
+ProjectSettings/ARCoreExtensionsProjectSettings.json
