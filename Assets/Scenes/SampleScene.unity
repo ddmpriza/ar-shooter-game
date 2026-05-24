@@ -405,6 +405,8 @@ GameObject:
   - component: {fileID: 76566214}
   - component: {fileID: 76566215}
   - component: {fileID: 76566216}
+  - component: {fileID: 76566218}
+  - component: {fileID: 76566217}
   m_Layer: 0
   m_Name: XR Origin
   m_TagString: Untagged
@@ -551,6 +553,39 @@ MonoBehaviour:
   videoPanel: {fileID: 1051970905}
   scorePanel: {fileID: 1600597591}
   scorePanelText: {fileID: 114538738}
+--- !u!114 &76566217
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 76566208}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30d8e625f94e18c45b2dc7295cbd6fe5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CloudAnchorManager
+  anchorManager: {fileID: 76566218}
+  raycastManager: {fileID: 76566209}
+  anchor1Prefab: {fileID: 3862277631971027947, guid: 7ae956b4f54394e80818898d8f4d30c6, type: 3}
+  anchor2Prefab: {fileID: 3622707214715587854, guid: 5158df00d36029549a0305dfde017664, type: 3}
+  isHosting: 0
+--- !u!114 &76566218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 76566208}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 728ad7fae8e460a4ba41265c7308d757, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.XR.ARFoundation::UnityEngine.XR.ARFoundation.ARAnchorManager
+  <trackablesChanged>k__BackingField:
+    m_PersistentCalls:
+      m_Calls: []
+  m_AnchorPrefab: {fileID: 0}
 --- !u!1 &114538736
 GameObject:
   m_ObjectHideFlags: 0
@@ -699,6 +734,7 @@ GameObject:
   - component: {fileID: 174343805}
   - component: {fileID: 174343804}
   - component: {fileID: 174343803}
+  - component: {fileID: 174343806}
   m_Layer: 0
   m_Name: AR Session
   m_TagString: Untagged
@@ -748,6 +784,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &174343806
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 174343802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b50ad3f5d9024549b0a549c5a03a084, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Google.XR.ARCoreExtensions::Google.XR.ARCoreExtensions.ARCoreExtensions
+  Session: {fileID: 174343804}
+  SessionOrigin: {fileID: 0}
+  CameraManager: {fileID: 180089666}
+  ARCoreExtensionsConfig: {fileID: 11400000, guid: 1e4eed25754cc0348b47e84b66acfaff, type: 2}
+  CameraConfigFilter: {fileID: 0}
 --- !u!1 &180089662
 GameObject:
   m_ObjectHideFlags: 0
@@ -2262,6 +2315,37 @@ Transform:
   - {fileID: 180089663}
   m_Father: {fileID: 76566212}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1964602097
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1964602098}
+  m_Layer: 0
+  m_Name: ARCoreExtensions
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1964602098
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1964602097}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2119998075
 GameObject:
   m_ObjectHideFlags: 0
@@ -2727,3 +2811,4 @@ SceneRoots:
   - {fileID: 1908476108}
   - {fileID: 2145237581}
   - {fileID: 2119998078}
+  - {fileID: 1964602098}

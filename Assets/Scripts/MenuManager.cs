@@ -10,6 +10,9 @@ public class MenuManager : MonoBehaviour
 
     public void InitializeCloudAnchors()
     {
-        Debug.Log("Initialize Cloud Anchors pressed!");
+        // Φόρτωσε τη SampleScene και ξεκίνα το hosting
+        PlayerPrefs.SetInt("StartHosting", 1);
+        PlayerPrefs.Save();
+        SceneManager.LoadScene("SampleScene");
     }
 }
