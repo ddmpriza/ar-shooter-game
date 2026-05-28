@@ -6,18 +6,33 @@ using Google.XR.ARCoreExtensions;
 
 // Διαχειρστής για hosting και resolving cloud anchors
 // Υλοποίσηση δύο λειτουργιών: 
-// Hsotinf: Ο χρήστης τοποθετεί 2 anchors και τα ανεβάζει στο cloud
-// Resolving: Οι χρήστες προσπαθούν να βρουν τα anchors που έχουν ανεβεί
+// Hosting: Ο χρήστης τοποθετεί 2 anchors και τα ανεβάζει στο cloud
+// Resolving: Οι χρήστες προσπαθούν να βρουν τα anchors που έχουν ανεβείpublic class CloudAnchorManager : MonoBehaviour
 public class CloudAnchorManager : MonoBehaviour
 {
     public static CloudAnchorManager instance;
 
+    // Διαχείριση AR components
     [Header("AR Components")]
     // Αναφορά στον ARAnchorManager για hosting/resolving
     [SerializeField] private ARAnchorManager anchorManager;
     // Αναφορά στον ARRaycastManager για ανίχνευση planes και τοποθέτηση anchors
     [SerializeField] private ARRaycastManager raycastManager;
 
+    // UI References
+    [Header("UI")]
+    // Panel που εμφανίζεται κατά τη διάρκεια του hosting με οδηγίες και κατάσταση
+    [SerializeField] private GameObject hostingPanel;
+    // Κείμενο που ενημερώνει τον χρήστη για την κατάσταση του hosting (π.χ. "Tap για anchor 1/2", "Uploading...", "✓ Ολοκληρώθηκε!")
+    [SerializeField] private TMPro.TextMeshProUGUI hostingStatusText;
+    // Κουμπί έναρξης παιχνιδιού που εμφανίζεται μετά το hosting
+    [SerializeField] private GameObject startButton;
+    // Κουμπί για shoot που εμφανίζεται μετά το hosting
+    [SerializeField] private GameObject shootButton;
+    // Κουμπί επανεκκίνησης που εμφανίζεται μετά το hosting
+    [SerializeField] private GameObject retryButton;
+
+    // Prefabs για τα anchors 
     [Header("Objects to spawn")]
     // 3D μοντέλο που εμφανίζεται στο πρώτο anchor
     [SerializeField] private GameObject anchor1Prefab;
@@ -26,25 +41,33 @@ public class CloudAnchorManager : MonoBehaviour
 
     // Λίστα αποθήκευσης αποτελεσμάτων raycast
     private List<ARRaycastHit> hits = new List<ARRaycastHit>();
-    
-    // IDs των cloud anchors που θα αποθηκευτούν μετά το hosting
-    private string cloudAnchorId1;
-    private string cloudAnchorId2;
+    // Πίνακας για αποθήκευση των IDs των cloud anchors που θα ανέβουν στο cloud
+    private string[] cloudAnchorIds = new string[2];
+    // Πίνακας για αποθήκευση των τοπικών ARAnchor references που δημιουργούνται κατά το hosting
+    private ARAnchor[] localAnchors = new ARAnchor[2];
+
 
     // Μετρητής τοποθέτησης anchors 
     private int anchorCount = 0;
+
     // Flag σηματοδότησης hosting λειτουργίας
     // Αυτό θα χρησιμοποιηθεί από το PlaceObject για να απενεργοποιήσει την τοποθέτηση νέων objects κατά τη διάρκεια του hosting
     public bool isHosting = false;
 
-    void Awake()
-    {
-        instance = this;
-    }
+    // Flag σηματοδότησης ολοκλήρωσης hosting
+    // Αυτό θα χρησιμοποιηθεί για να ενεργοποιήσει την εμφάνιση των αντικειμένων στα σημεία των anchors μετά το hosting
+    public bool hostingComplete = false;
 
+    // Flag για να αποτρέψει πολλαπλά taps και hosting ταυτόχρονα
+    private bool isWaitingForHosting = false;
+
+    void Awake() => instance = this;
+
+    // Κατά την εκκίνηση της σκηνής, ελέγχουμε αν το PlayerPref "StartHosting" είναι 1. 
+    // Αν είναι, ξεκινάει η λειτουργία hosting. 
+    // Αν δεν ειναι, γίνονται resolve anchors από προηγούμενη συνεδρία (αν υπάρχουν).
     void Start()
     {
-        Debug.Log("StartHosting flag: " + PlayerPrefs.GetInt("StartHosting", 0));
         // Προτεραιότητα στο hosting αν το flag είναι ενεργοποιημένο
         if (PlayerPrefs.GetInt("StartHosting", 0) == 1)
         {
@@ -56,58 +79,56 @@ public class CloudAnchorManager : MonoBehaviour
         //  αλλιώς resolving
         else
         {
-            ResolveAnchors();
+            ResolveAnchors(); // Για μελλοντικές συνεδρίες
         }
     }
 
-    // Ενεργοποίηση hosting λειτουργίας - καλείται από το MenuManager όταν ο χρήστης επιλέγει να ξεκινήσει hosting
+    // Ενεργοποίηση hosting λειτουργίας - καλείται από το MenuManager όταν ο χρήστης επιλέγει να ξεκινήσει 
+    // με InitializeCloudAnchors (δηλαδή να τοποθετήσει τα cloud anchors)
     public void StartHosting()
     {
         isHosting = true;
+        hostingComplete = false;
         anchorCount = 0;
-        Debug.Log("Hosting mode started - tap to place 2 anchors");
+        isWaitingForHosting = false;
+        hostingPanel.SetActive(true);
+        hostingStatusText.text = "Σκάναρε και tap για anchor 1/2";
+        startButton.SetActive(false);
+        shootButton.SetActive(false);
+        retryButton.SetActive(false);
     }
 
+    // Κάθε frame, το hosting mode ειναι ενεργό, ανιχνεύεται το tap του χρήστη, γίνεται raycast στο πλησιέστερο 
+    // AR plane και δημιουργείται anchor εκεί.
     void Update()
     {
-        // Έλεγχος Hosting mode
-        if (!isHosting) return;
-
+        // Έλεγχος Hosting mode και αποφυγή πολλαπλών taps
+        if (!isHosting || isWaitingForHosting || anchorCount >= 2) return;
+    
         // Αποφυγή τοποθέτησης νέων anchors αν έχουν ήδη τοποθετηθεί 2
         if (Input.touchCount == 0) return;
-
-        // Περιορισμός σε 2 anchors για hosting
-        if (anchorCount >= 2) return;
 
         Touch touch = Input.GetTouch(0);
         if (touch.phase != TouchPhase.Began) return;
 
         // Raycast για ανίχνευση επιπέδου και τοποθέτηση anchor
-        if (raycastManager.Raycast(touch.position, hits, UnityEngine.XR.ARSubsystems.TrackableType.PlaneWithinPolygon))
-        {
-            Debug.Log("Raycast hit plane! Hosting anchor...");
-            HostAnchor(hits[0].pose);
-        }
-        else
-        {
-            Debug.Log("Raycast missed - no plane detected");
-        }
-    }
+        if (!raycastManager.Raycast(touch.position, hits, UnityEngine.XR.ARSubsystems.TrackableType.PlaneWithinPolygon)) return;
 
-    // Δημιουργία anchor στο σημείο που χτύπησε ο χρήστης και έναρξη της διαδικασίας hosting
-    private void HostAnchor(Pose pose)
-    {
-        // Δημιουργία κενού GameObject στην θέση του tap
-        GameObject anchorGO = new GameObject("CloudAnchor");
-        anchorGO.transform.position = pose.position;
-        anchorGO.transform.rotation = pose.rotation;
+        ARPlane plane = FindObjectOfType<ARPlaneManager>()?.GetPlane(hits[0].trackableId);
+        if (plane == null) { Debug.LogError("Plane not found!"); return; }
 
-        // Προσθήκη ARAnchor component για να γίνει anchor
-        ARAnchor anchor = anchorGO.AddComponent<ARAnchor>();
+        // Δημιουργία τοπικού anchor στο σημείο του tap
+        ARAnchor anchor = anchorManager.AttachAnchor(plane, hits[0].pose);
+        if (anchor == null) { Debug.LogError("Failed to create anchor!"); return; }
 
-        // Upload του anchor στο cloud
-        HostCloudAnchorPromise promise = anchorManager.HostCloudAnchorAsync(anchor, 1);
-        StartCoroutine(WaitForHosting(promise));
+        // Αποθήκευση τοπικού reference για άμεσο spawn μετά το hosting
+        localAnchors[anchorCount] = anchor;
+
+        isWaitingForHosting = true;
+        hostingStatusText.text = "Uploading anchor " + (anchorCount + 1) + "/2...";
+
+        // Ανέβασμα του anchor στο cloud 
+        StartCoroutine(WaitForHosting(anchorManager.HostCloudAnchorAsync(anchor, 1)));
     }
 
     // Aναμονή για το αποτέλεσμα του hosting και αποθήκευση των IDs των anchors
@@ -118,51 +139,80 @@ public class CloudAnchorManager : MonoBehaviour
 
         if (promise.Result.CloudAnchorState == CloudAnchorState.Success)
         {
+            cloudAnchorIds[anchorCount] = promise.Result.CloudAnchorId;
             anchorCount++;
-            string id = promise.Result.CloudAnchorId;
-            Debug.Log("Cloud Anchor hosted! ID: " + id);
+            Debug.Log("Anchor " + anchorCount + " hosted! ID: " + cloudAnchorIds[anchorCount - 1]);
 
-            // Αποθήκευση του ID του cloud anchor αν το hosting ήταν επιτυχές ανάλογα με ποίο anchor είναι (1 ή 2)
-            if (anchorCount == 1)
-                cloudAnchorId1 = id;
-            else if (anchorCount == 2)
+            if (anchorCount < 2)
             {
-                cloudAnchorId2 = id;
-                isHosting = false;
-                Debug.Log("Both anchors hosted!");
+                // Αν έχει τοποθετηθεί μόνο 1 anchor, ενημέρωση του χρήστη για το επόμενο anchor
+                hostingStatusText.text = "Anchor 1/2  Tap για anchor 2/2";
+                isWaitingForHosting = false;
             }
+            else
+            {
+                // Αν έχουν τοποθετηθεί και τα 2 anchors, αποθήκευση των IDs για μελλοντική χρήση (resolving σε επόμενη συνεδρία)
+                PlayerPrefs.SetString("CloudAnchorId1", cloudAnchorIds[0]);
+                PlayerPrefs.SetString("CloudAnchorId2", cloudAnchorIds[1]);
+                PlayerPrefs.Save();
 
-            // Αν και τα δύο anchors έχουν hosted, αποθήκευση των IDs στα PlayerPrefs για να είναι διαθέσιμα κατά το resolving
-            PlayerPrefs.SetString("CloudAnchorId1", cloudAnchorId1);
-            PlayerPrefs.SetString("CloudAnchorId2", cloudAnchorId2);
-            PlayerPrefs.Save();
-            Debug.Log("Anchor " + anchorCount + " saved!");
+                isHosting = false;
+                hostingComplete = true;
+                isWaitingForHosting = false;
+                hostingStatusText.text = "Και τα 2 anchors τοποθετήθηκαν!";
+
+                // Εμφάνιση κουμπιών παιχνιδιού
+                hostingPanel.SetActive(false);
+                startButton.SetActive(true);
+                shootButton.SetActive(true);
+                retryButton.SetActive(true);
+                Debug.Log("Both anchors hosted!");
+
+                // Spawn αμέσως στην ίδια συνεδρία χωρίς resolve
+                SpawnAnchorObjects();
+            }
         }
         else
         {
             Debug.LogError("Hosting failed: " + promise.Result.CloudAnchorState);
-            isHosting = false;
+            hostingStatusText.text = "Απέτυχε! Δοκίμασε ξανά.";
+            isWaitingForHosting = false;
         }
     }
 
-    // Εύρεση και εμφάνιση των anchors που έχουν αποθηκευτεί στο cloud anchors
-    // Καλείται κατα το Game Mode 
+    // Κλήση μετά το hosting — είτε αμέσως μετά το hosting της ίδιας συνεδρίας, 
+    // είτε μετά το resolving σε επόμενη συνεδρία — 
+    // για να εμφανίσει τα 3D αντικείμενα στις θέσεις των anchors
+    private void SpawnAnchorObjects()
+    {
+        if (anchor1Prefab != null && localAnchors[0] != null)
+            Instantiate(anchor1Prefab, localAnchors[0].transform.position,
+                        localAnchors[0].transform.rotation);
+
+        if (anchor2Prefab != null && localAnchors[1] != null)
+            Instantiate(anchor2Prefab, localAnchors[1].transform.position,
+                        localAnchors[1].transform.rotation);
+
+        Debug.Log("Anchor objects spawned!");
+    }
+
+    // Φόρτωση των αποθηκευμένων cloud anchor IDs και προσπάθεια resolve.
+    // Χρήση σε νέες συνεδρίες όπου δεν γίνεται hosting.
     public void ResolveAnchors()
     {
         // Ανάκτηση των αποθηκευμένων IDs των cloud anchors από τα PlayerPrefs
-        cloudAnchorId1 = PlayerPrefs.GetString("CloudAnchorId1", "");
-        cloudAnchorId2 = PlayerPrefs.GetString("CloudAnchorId2", "");
+        string id1 = PlayerPrefs.GetString("CloudAnchorId1", "");
+        string id2 = PlayerPrefs.GetString("CloudAnchorId2", "");
 
         // Αν δεν υπάρχουν αποθηκευμένα IDs, εμφάνιση μηνύματος και έξοδος
-        if (cloudAnchorId1 != "")
-            StartCoroutine(WaitForResolving( anchorManager.ResolveCloudAnchorAsync(cloudAnchorId1), 1));
-        
-        if (cloudAnchorId2 != "")
-            StartCoroutine(WaitForResolving(anchorManager.ResolveCloudAnchorAsync(cloudAnchorId2), 2));
+        if (id1 != "") StartCoroutine(WaitForResolving(
+            anchorManager.ResolveCloudAnchorAsync(id1), 1));
+        if (id2 != "") StartCoroutine(WaitForResolving(
+            anchorManager.ResolveCloudAnchorAsync(id2), 2));
     }
 
     // Αναμονή αποτελέσματος του resolving και εμφάνιση των αντικειμένων στα σημεία των anchors αν το resolving ήταν επιτυχές
-    private IEnumerator WaitForResolving(ResolveCloudAnchorPromise promise, int anchorIndex)
+    private IEnumerator WaitForResolving(ResolveCloudAnchorPromise promise, int index)
     {
         // Αναμονή για την εύρεση anchor στον χώρο
         yield return promise;
@@ -170,12 +220,10 @@ public class CloudAnchorManager : MonoBehaviour
         // Αν βρεθεί
         if (promise.Result.CloudAnchorState == CloudAnchorState.Success)
         {
-            Debug.Log("Anchor " + anchorIndex + " resolved!");
-            // Εμφάνιση του αντικειμένου στο σημείο του anchor ανάλογα με το ποιο anchor είναι (1 ή 2)
-            if (anchorIndex == 1)
-                Instantiate(anchor1Prefab, promise.Result.Anchor.transform);
-            else
-                Instantiate(anchor2Prefab, promise.Result.Anchor.transform);
+            Debug.Log("Anchor " + index + " resolved!");
+            GameObject prefab = index == 1 ? anchor1Prefab : anchor2Prefab;
+            Instantiate(prefab, promise.Result.Anchor.transform.position,
+                                promise.Result.Anchor.transform.rotation);
         }
         else
             Debug.LogError("Resolving failed: " + promise.Result.CloudAnchorState);
