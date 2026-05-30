@@ -14,15 +14,18 @@ public class GeospatialManager : MonoBehaviour
 {
     [Header("AR Components")]
     // Geospatial API απαιτεί ARSession και AREarthManager
-    [SerializeField] private AREarthManager earthManager;        
+    [Header("AR Components")]
+    [SerializeField] private AREarthManager earthManager;
+    [SerializeField] private ARAnchorManager anchorManager; // ΝΕΟΣ
+    
 
     [Header("Target Location - Εθν. Αμύνης & Αγ. Δημητρίου")]
-    private const double TargetLatitude  = 40.63066;
-    private const double TargetLongitude = 22.95192;
+    private const double TargetLatitude  = 40.6308107;// 3D μοντέλο που θα εμφανιστεί;
+    private const double TargetLongitude = 22.9517927;
     // Ύψος σε μέτρα (0 = επίπεδο εδάφους)
     private const double TargetAltitude  = 0.0; 
     // Αποδεκτή απόσταση σε μέτρα για τοποθέτηση του μοντέλου (π.χ. 30μ)
-    private const double PlacementRadius = 30.0;  
+    private const double PlacementRadius = 100.0;  
 
     [Header("Object to Spawn")]
     // ο Kyle που θα εμφανιστεί όταν ο χρήστης πλησιάσει αρκετά κοντά στο στόχο
@@ -50,17 +53,24 @@ public class GeospatialManager : MonoBehaviour
     // Αναμονή για το EarthManager να κάνει tracking πριν ξεκινήσει ο έλεγχος θέσης
     private IEnumerator WaitForEarthTracking()
     {
-        // Αναμονή μέχρι το ARCore να αρχικοποιηθεί
-        yield return new WaitUntil(() =>
-            earthManager != null &&
-            earthManager.EarthTrackingState == TrackingState.Tracking);
+        while (earthManager == null || 
+            earthManager.EarthTrackingState != TrackingState.Tracking)
+        {
+            if (earthManager != null)
+                Debug.Log("EarthTrackingState: " + earthManager.EarthTrackingState);
+            else
+                Debug.LogError("earthManager is NULL!");
+            yield return new WaitForSeconds(1f);
+        }
 
         isTracking = true;
-        statusText.text = "GPS ενεργό! Πήγαινε στη γωνία\nΕθν. Αμύνης & Αγ. Δημητρίου";
+        statusText.text = "GPS ενεργό!";
     }
 
     void Update()
     {
+        Debug.Log("Geospetial Update - isTracking: " + isTracking + " modelSpawned: " + modelSpawned);
+
         if (!isTracking || modelSpawned) return;
 
         // Έλεγχος αν το EarthManager κάνει tracking
@@ -81,43 +91,69 @@ public class GeospatialManager : MonoBehaviour
         //  Τοποθέτηση του μοντέλου αν η απόσταση είναι μικρότερη ή ίση με το PlacementRadius
         if (distance <= PlacementRadius)
         {
+        if (distance <= PlacementRadius)
+        {
+            GeospatialPose p = earthManager.CameraGeospatialPose;
+            if (p.HeadingAccuracy > 25 || p.HorizontalAccuracy > 15)
+            {
+                statusText.text = string.Format(
+                    "GPS ακρίβεια χαμηλή ({0:F0}°)\nΠεριμένετε...", p.HeadingAccuracy);
+                return;
+            }
             PlaceModelAtTarget(geospatialPose.Altitude);
+        }        
         }
+        else
+        {
+            Debug.Log("Geospetial Εκτός radius. Απόσταση: " + distance + " Radius: " + PlacementRadius);
+        }
+        
     }
 
 
     // Τοποθέτηση του Kyle στο σημείο στόχο με χρήση του Geospatial API
     private void PlaceModelAtTarget(double currentAltitude)
     {
+        // Σταματάμε αμέσως τις επαναλήψεις
+        modelSpawned = true;
+
         if (modelPrefab == null)
         {
             Debug.LogError("Model Prefab δεν έχει οριστεί!");
             return;
         }
 
-        // Χρήση το τρέχον altitude της κάμερας για το επίπεδο εδάφους
-        double altitude = currentAltitude - 1.5; // -1.5μ για να είναι στο έδαφος
+        // Έλεγχος ακρίβειας GPS πριν δημιουργια του anchor
+        GeospatialPose pose = earthManager.CameraGeospatialPose;
+        Debug.Log("Heading accuracy: " + pose.HeadingAccuracy + 
+                " Position accuracy: " + pose.HorizontalAccuracy);
 
-        // Δημιουργία geospatial anchor στο σημείο στόχο
-        ARGeospatialAnchor anchor = ARAnchorManagerExtensions.AddAnchor(
-            FindObjectOfType<ARAnchorManager>(),
-            TargetLatitude,
-            TargetLongitude,
-            altitude,
-            Quaternion.identity);
+        double altitude = currentAltitude - 1.5;
 
-        if (anchor != null)
+        try
         {
-            // Εμφανίζεται το μοντέλο πάνω στο anchor
-            Instantiate(modelPrefab, anchor.transform);
-            modelSpawned = true;
-            statusText.text = "Μοντέλο τοποθετήθηκε!";
-            Debug.Log("Geospatial model placed at target!");
+            ARGeospatialAnchor anchor = ARAnchorManagerExtensions.AddAnchor(
+                anchorManager,  // αντί για FindObjectOfType<ARAnchorManager>()
+                TargetLatitude, TargetLongitude, altitude, Quaternion.identity);
+
+            if (anchor != null)
+            {
+                Instantiate(modelPrefab, anchor.transform);
+                statusText.text = "✓ Μοντέλο τοποθετήθηκε!";
+                Debug.Log("Geospatial model placed!");
+            }
+            else
+            {
+                modelSpawned = false;
+                Debug.LogError("AddAnchor returned null!");
+                statusText.text = "Σφάλμα. Δοκίμασε ξανά...";
+            }
         }
-        else
+        catch (System.Exception e)
         {
-            Debug.LogError("Failed to create geospatial anchor!");
-            statusText.text = "Σφάλμα τοποθέτησης. Δοκίμασε ξανά.";
+            modelSpawned = false;
+            Debug.LogError("AddAnchor exception: " + e.Message);
+            statusText.text = "Exception: " + e.Message;
         }
     }
 
@@ -139,6 +175,6 @@ public class GeospatialManager : MonoBehaviour
     // Επιστροφή στο κύριο μενού με το πάτημα του Back button
     public void OnBackButton()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene("SampleScene");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("MyARGame");
     }
 }

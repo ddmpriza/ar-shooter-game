@@ -5,6 +5,8 @@ apply from: '../shared/common.gradle'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.google.android.gms:play-services-location:21.0.1'
+
 // Android Resolver Dependencies Start
     implementation 'com.google.android.gms:play-services-location:17+' // Google.XR.ARCoreExtensions.Editor.Internal.ExternalDependencyResolverHelper.RegisterAndroidDependencies
 // Android Resolver Dependencies End

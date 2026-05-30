@@ -17,7 +17,8 @@ public class PlaceObject : MonoBehaviour
     void Update()
     {
         // Μόνο όταν το game ΔΕΝ έχει ξεκινήσει μπορούμε να τοποθετούμε objects
-        if (GameStateManager.instance.gameStarted) return;
+        // if (GameStateManager.instance.gameStarted) return;
+        if (GameStateManager.instance != null && GameStateManager.instance.gameStarted) return;
         if (CloudAnchorManager.instance != null && 
             CloudAnchorManager.instance.isHosting) return;
         if (Input.touchCount == 0) return; 
