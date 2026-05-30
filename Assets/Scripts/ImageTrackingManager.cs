@@ -14,12 +14,19 @@ public class ImageTrackingManager : MonoBehaviour
 
     [Header("Video")]
     [SerializeField] private GameObject videoPanel;
+    private UnityEngine.Video.VideoPlayer videoPlayer;
 
     [Header("Score")]
     [SerializeField] private GameObject scorePanel;
     [SerializeField] private TextMeshProUGUI scorePanelText;
 
     private WebCamTexture frontCamTexture;
+
+    void Start()
+    {
+        if (videoPanel != null)
+            videoPlayer = videoPanel.GetComponent<UnityEngine.Video.VideoPlayer>();
+    }
 
     void Awake()
     {
@@ -56,8 +63,12 @@ public class ImageTrackingManager : MonoBehaviour
 
     void HandleImage(ARTrackedImage trackedImage)
     {
+        Debug.Log("Tracked image: " + trackedImage.referenceImage.name);
+        Debug.Log("gameStarted: " + GameStateManager.instance.gameStarted);
+        Debug.Log("trackingState: " + trackedImage.trackingState);
+
         if (!GameStateManager.instance.gameStarted) return;
-        if (trackedImage.trackingState != TrackingState.Tracking) return;
+        //if (trackedImage.trackingState != TrackingState.Tracking) return;
 
         string name = trackedImage.referenceImage.name;
 
@@ -73,11 +84,14 @@ public class ImageTrackingManager : MonoBehaviour
             scorePanel.SetActive(true);
             scorePanelText.text = "Score: "  + ScoreManager.instance.GetScore();
         }
-        // else if (name == "videο")
-        // {
-        //     scorePanel.SetActive(true);
-        //     scorePanelText.text = "Score: "  + ScoreManager.instance.GetScore();
-        //}
+        else if (name == "video")
+        {
+            Debug.Log("Video case triggered! videoPanel: " + (videoPanel != null) + 
+              " videoPlayer: " + (videoPlayer != null));
+            videoPanel.SetActive(true);
+            videoPlayer.Stop();
+            videoPlayer.Play();
+        }
     }
 
     void StartFrontCamera()
@@ -98,6 +112,7 @@ public class ImageTrackingManager : MonoBehaviour
     {
         frontCameraPanel.SetActive(false);
         videoPanel.SetActive(false);
+        videoPlayer.Stop();
         scorePanel.SetActive(false);
 
         if (frontCamTexture != null && frontCamTexture.isPlaying)
