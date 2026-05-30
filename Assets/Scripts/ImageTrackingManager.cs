@@ -8,14 +8,14 @@ public class ImageTrackingManager : MonoBehaviour
 {
     private ARTrackedImageManager trackedImageManager;
 
-    [Header("Among Us - Front Camera")]
+    [Header("Front Camera")]
     [SerializeField] private GameObject frontCameraPanel;
     [SerializeField] private RawImage frontCameraDisplay;
 
-    [Header("YouTube - Video")]
+    [Header("Video")]
     [SerializeField] private GameObject videoPanel;
 
-    [Header("Olympics - Score")]
+    [Header("Score")]
     [SerializeField] private GameObject scorePanel;
     [SerializeField] private TextMeshProUGUI scorePanelText;
 
@@ -63,20 +63,21 @@ public class ImageTrackingManager : MonoBehaviour
 
         HideAll();
 
-        if (name == "Among_Us_1")
+        if (name == "front_camera")
         {
             frontCameraPanel.SetActive(true);
             StartFrontCamera();
         }
-        else if (name == "Youtube")
-        {
-            videoPanel.SetActive(true);
-        }
-        else if (name == "Score")
+        else if (name == "score")
         {
             scorePanel.SetActive(true);
-            scorePanelText.text = "Score: " + ScoreManager.instance.GetScore();
+            scorePanelText.text = "Score: "  + ScoreManager.instance.GetScore();
         }
+        // else if (name == "videο")
+        // {
+        //     scorePanel.SetActive(true);
+        //     scorePanelText.text = "Score: "  + ScoreManager.instance.GetScore();
+        //}
     }
 
     void StartFrontCamera()
