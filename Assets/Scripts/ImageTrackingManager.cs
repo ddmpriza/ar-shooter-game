@@ -63,16 +63,16 @@ public class ImageTrackingManager : MonoBehaviour
 
         HideAll();
 
-        if (name == "AmongUs")
+        if (name == "Among_Us_1")
         {
             frontCameraPanel.SetActive(true);
             StartFrontCamera();
         }
-        else if (name == "YouTube")
+        else if (name == "Youtube")
         {
             videoPanel.SetActive(true);
         }
-        else if (name == "Olympics")
+        else if (name == "Score")
         {
             scorePanel.SetActive(true);
             scorePanelText.text = "Score: " + ScoreManager.instance.GetScore();
