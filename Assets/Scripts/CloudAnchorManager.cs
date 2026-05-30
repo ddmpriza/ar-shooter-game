@@ -34,7 +34,7 @@ public class CloudAnchorManager : MonoBehaviour
 
     // Prefabs για τα anchors 
     [Header("Objects to spawn")]
-    // 3D μοντέλο που εμφανίζεται στο πρώτο anchor
+    // Robot Kyle που εμφανίζεται στο πρώτο anchor
     [SerializeField] private GameObject anchor1Prefab;
     // Glossy object που εμφανίζεται στο δεύτερο anchor
     [SerializeField] private GameObject anchor2Prefab;
@@ -79,8 +79,14 @@ public class CloudAnchorManager : MonoBehaviour
         //  αλλιώς resolving
         else
         {
-            ResolveAnchors(); // Για μελλοντικές συνεδρίες
+            StartCoroutine(DelayedResolve()); // Για μελλοντικές συνεδρίες
         }
+    }
+
+    private IEnumerator DelayedResolve()
+    {
+        yield return new WaitForSeconds(3f);
+        ResolveAnchors();
     }
 
     // Ενεργοποίηση hosting λειτουργίας - καλείται από το MenuManager όταν ο χρήστης επιλέγει να ξεκινήσει 
@@ -214,18 +220,29 @@ public class CloudAnchorManager : MonoBehaviour
     // Αναμονή αποτελέσματος του resolving και εμφάνιση των αντικειμένων στα σημεία των anchors αν το resolving ήταν επιτυχές
     private IEnumerator WaitForResolving(ResolveCloudAnchorPromise promise, int index)
     {
-        // Αναμονή για την εύρεση anchor στον χώρο
-        yield return promise;
+        while (promise.State == PromiseState.Pending)
+            yield return null;
 
-        // Αν βρεθεί
-        if (promise.Result.CloudAnchorState == CloudAnchorState.Success)
+        yield return new WaitForSeconds(1f);
+
+        CloudAnchorState state = CloudAnchorState.None;
+        try { state = promise.Result.CloudAnchorState; } catch { }
+
+        if (state == CloudAnchorState.Success)
         {
-            Debug.Log("Anchor " + index + " resolved!");
-            GameObject prefab = index == 1 ? anchor1Prefab : anchor2Prefab;
-            Instantiate(prefab, promise.Result.Anchor.transform.position,
-                                promise.Result.Anchor.transform.rotation);
+            try
+            {
+                Debug.Log("Anchor " + index + " resolved!");
+                GameObject prefab = index == 1 ? anchor1Prefab : anchor2Prefab;
+                Instantiate(prefab, promise.Result.Anchor.transform.position,
+                                    promise.Result.Anchor.transform.rotation);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("Failed to instantiate anchor " + index + ": " + e.Message);
+            }
         }
         else
-            Debug.LogError("Resolving failed: " + promise.Result.CloudAnchorState);
+            Debug.LogError("Resolving failed: " + state);
     }
 }

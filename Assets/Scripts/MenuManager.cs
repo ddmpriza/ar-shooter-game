@@ -15,4 +15,11 @@ public class MenuManager : MonoBehaviour
         PlayerPrefs.Save();
         SceneManager.LoadScene("SampleScene");
     }
+
+    public void OpenGeospatial()
+    {
+        SceneManager.LoadScene("GeospatialScene");
+    }
+
+    
 }
