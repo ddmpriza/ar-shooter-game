@@ -27,6 +27,7 @@ Thumbs.db
 *.sln
 *.suo
 *.tmp
+*.utmp
 
 Assets/Settings/ARCoreConfig.asset
 Assets/Settings/ARCoreConfig.asset.meta
