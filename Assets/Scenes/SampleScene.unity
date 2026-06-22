@@ -740,7 +740,6 @@ GameObject:
   - component: {fileID: 174343805}
   - component: {fileID: 174343804}
   - component: {fileID: 174343803}
-  - component: {fileID: 174343806}
   m_Layer: 0
   m_Name: AR Session
   m_TagString: Untagged
@@ -790,23 +789,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &174343806
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 174343802}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1b50ad3f5d9024549b0a549c5a03a084, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Google.XR.ARCoreExtensions::Google.XR.ARCoreExtensions.ARCoreExtensions
-  Session: {fileID: 174343804}
-  SessionOrigin: {fileID: 0}
-  CameraManager: {fileID: 180089666}
-  ARCoreExtensionsConfig: {fileID: 11400000, guid: 1e4eed25754cc0348b47e84b66acfaff, type: 2}
-  CameraConfigFilter: {fileID: 0}
 --- !u!1 &180089662
 GameObject:
   m_ObjectHideFlags: 0

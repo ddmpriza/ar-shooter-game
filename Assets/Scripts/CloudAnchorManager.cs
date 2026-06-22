@@ -79,6 +79,7 @@ public class CloudAnchorManager : MonoBehaviour
         //  αλλιώς resolving
         else
         {
+            Debug.LogError("=== RESOLVE MODE ==="); 
             StartCoroutine(DelayedResolve()); // Για μελλοντικές συνεδρίες
         }
     }
@@ -86,7 +87,27 @@ public class CloudAnchorManager : MonoBehaviour
     private IEnumerator DelayedResolve()
     {
         yield return new WaitForSeconds(3f);
-        ResolveAnchors();
+
+        if (!PlayerPrefs.HasKey("A1x")) yield break;
+
+        Vector3 pos1 = new Vector3(
+            PlayerPrefs.GetFloat("A1x"),
+            PlayerPrefs.GetFloat("A1y"),
+            PlayerPrefs.GetFloat("A1z"));
+
+        Vector3 pos2 = new Vector3(
+            PlayerPrefs.GetFloat("A2x"),
+            PlayerPrefs.GetFloat("A2y"),
+            PlayerPrefs.GetFloat("A2z"));
+
+        Instantiate(anchor1Prefab, pos1, Quaternion.identity);
+        Instantiate(anchor2Prefab, pos2, Quaternion.identity);
+
+        startButton.SetActive(true);
+        shootButton.SetActive(true);
+        retryButton.SetActive(true);
+
+        Debug.Log("Anchors spawned from saved positions!");
     }
 
     // Ενεργοποίηση hosting λειτουργίας - καλείται από το MenuManager όταν ο χρήστης επιλέγει να ξεκινήσει 
@@ -160,7 +181,19 @@ public class CloudAnchorManager : MonoBehaviour
                 // Αν έχουν τοποθετηθεί και τα 2 anchors, αποθήκευση των IDs για μελλοντική χρήση (resolving σε επόμενη συνεδρία)
                 PlayerPrefs.SetString("CloudAnchorId1", cloudAnchorIds[0]);
                 PlayerPrefs.SetString("CloudAnchorId2", cloudAnchorIds[1]);
+                
+                PlayerPrefs.SetFloat("A1x", localAnchors[0].transform.position.x);
+                PlayerPrefs.SetFloat("A1y", localAnchors[0].transform.position.y);
+                PlayerPrefs.SetFloat("A1z", localAnchors[0].transform.position.z);
+                PlayerPrefs.SetFloat("A2x", localAnchors[1].transform.position.x);
+                PlayerPrefs.SetFloat("A2y", localAnchors[1].transform.position.y);
+                PlayerPrefs.SetFloat("A2z", localAnchors[1].transform.position.z);
+
                 PlayerPrefs.Save();
+
+                Debug.LogError("=== CLOUD ANCHOR IDs ===");
+                Debug.LogError("Anchor 1 ID: " + cloudAnchorIds[0]);
+                Debug.LogError("Anchor 2 ID: " + cloudAnchorIds[1]);
 
                 isHosting = false;
                 hostingComplete = true;
@@ -220,29 +253,26 @@ public class CloudAnchorManager : MonoBehaviour
     // Αναμονή αποτελέσματος του resolving και εμφάνιση των αντικειμένων στα σημεία των anchors αν το resolving ήταν επιτυχές
     private IEnumerator WaitForResolving(ResolveCloudAnchorPromise promise, int index)
     {
-        while (promise.State == PromiseState.Pending)
+        float elapsed = 0f;
+        while (promise.State == PromiseState.Pending && elapsed < 60f)
+        {
+            elapsed += Time.deltaTime;
             yield return null;
+        }
 
-        yield return new WaitForSeconds(1f);
+        Debug.LogError("Anchor " + index + " after " + elapsed.ToString("F0") + "s | State: " + promise.State);
 
         CloudAnchorState state = CloudAnchorState.None;
-        try { state = promise.Result.CloudAnchorState; } catch { }
+        try { state = promise.Result.CloudAnchorState; }
+        catch (System.Exception e) { Debug.LogError("Exception: " + e.GetType().Name + " - " + e.Message); }
+
+        Debug.LogError("Anchor " + index + " CloudAnchorState: " + state);
 
         if (state == CloudAnchorState.Success)
         {
-            try
-            {
-                Debug.Log("Anchor " + index + " resolved!");
-                GameObject prefab = index == 1 ? anchor1Prefab : anchor2Prefab;
-                Instantiate(prefab, promise.Result.Anchor.transform.position,
-                                    promise.Result.Anchor.transform.rotation);
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError("Failed to instantiate anchor " + index + ": " + e.Message);
-            }
+            GameObject prefab = index == 1 ? anchor1Prefab : anchor2Prefab;
+            Instantiate(prefab, promise.Result.Anchor.transform.position,
+                                promise.Result.Anchor.transform.rotation);
         }
-        else
-            Debug.LogError("Resolving failed: " + state);
     }
 }
