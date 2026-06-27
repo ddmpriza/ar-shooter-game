@@ -13,7 +13,7 @@ public class CloudAnchorManager : MonoBehaviour
     public static CloudAnchorManager instance;
 
     // Διαχείριση AR components
-    [Header("AR Components")]                                       // Οργάνωση του Inspector με [Header]
+    [Header("AR Components")]                                   // Οργάνωση του Inspector με [Header]
     // ARAnchorManager: Διαχείριση των anchors - βιβλιοθήκη για hosting και resolving cloud anchors
     [SerializeField] private ARAnchorManager anchorManager;
     // ARRaycastManager: Ανίχνευση planes και τοποθέτηση anchors - βιβλιοθήκη για raycasting και ανίχνευση επιπέδων
@@ -90,6 +90,7 @@ public class CloudAnchorManager : MonoBehaviour
     // IEnumerator: Εμφάνιση των τιμών σταδιακά
     private IEnumerator DelayedResolve()
     {
+        Debug.LogError("=== DelayedResolve START ===");
         // Αναμονή 3" - Αναμονή Αρχικοποίησης του AR Session
         yield return new WaitForSeconds(3f);
 
@@ -101,14 +102,12 @@ public class CloudAnchorManager : MonoBehaviour
         Vector3 pos1 = new Vector3(
             PlayerPrefs.GetFloat("A1x"),
             PlayerPrefs.GetFloat("A1y"),
-            PlayerPrefs.GetFloat("A1z"),
-            PlayerPrefs.GetFloat("A1rw"));
+            PlayerPrefs.GetFloat("A1z"));
 
         Vector3 pos2 = new Vector3(
             PlayerPrefs.GetFloat("A2x"),
             PlayerPrefs.GetFloat("A2y"),
-            PlayerPrefs.GetFloat("A2z"),
-            PlayerPrefs.GetFloat("A2rw"));
+            PlayerPrefs.GetFloat("A2z"));
 
         // Εμφάνιση των anchors στην αποθηκευμένη θέση
         Instantiate(anchor1Prefab, pos1, Quaternion.identity);
@@ -118,7 +117,7 @@ public class CloudAnchorManager : MonoBehaviour
         startButton.SetActive(true);
         shootButton.SetActive(true);
         retryButton.SetActive(true);
-
+        ResolveAnchors();
         Debug.Log("Anchors spawned from saved positions!");
     }
 
@@ -196,12 +195,14 @@ public class CloudAnchorManager : MonoBehaviour
                 PlayerPrefs.SetString("CloudAnchorId1", cloudAnchorIds[0]);
                 PlayerPrefs.SetString("CloudAnchorId2", cloudAnchorIds[1]);
                 
-                PlayerPrefs.SetFloat("A1x", localAnchors[0].transform.position.rotation.x);
-                PlayerPrefs.SetFloat("A1y", localAnchors[0].transform.position.rotation.y);
-                PlayerPrefs.SetFloat("A1z", localAnchors[0].transform.position.rotation.z);
-                PlayerPrefs.SetFloat("A2x", localAnchors[1].transform.position.rotation.x);
-                PlayerPrefs.SetFloat("A2y", localAnchors[1].transform.position.rotation.y);
-                PlayerPrefs.SetFloat("A2z", localAnchors[1].transform.position.rotation.z);
+                PlayerPrefs.SetFloat("A1x", localAnchors[0].transform.position.x);
+                PlayerPrefs.SetFloat("A1y", localAnchors[0].transform.position.y);
+                PlayerPrefs.SetFloat("A1z", localAnchors[0].transform.position.z);
+
+                PlayerPrefs.SetFloat("A2x", localAnchors[1].transform.position.x);
+                PlayerPrefs.SetFloat("A2y", localAnchors[1].transform.position.y);
+                PlayerPrefs.SetFloat("A2z", localAnchors[1].transform.position.z);
+                
 
                 PlayerPrefs.Save();
 
@@ -246,6 +247,7 @@ public class CloudAnchorManager : MonoBehaviour
     // Χρήση σε νέες συνεδρίες όπου δεν γίνεται hosting.
     public void ResolveAnchors()
     {
+        Debug.LogError("=== DelayedResolve START ===");
         // Ανάκτηση των αποθηκευμένων IDs των cloud anchors από τα PlayerPrefs
         string id1 = PlayerPrefs.GetString("CloudAnchorId1", "");
         string id2 = PlayerPrefs.GetString("CloudAnchorId2", "");
@@ -257,6 +259,7 @@ public class CloudAnchorManager : MonoBehaviour
             anchorManager.ResolveCloudAnchorAsync(id2), 2));
     }
 
+// Σημείωση:
     // Αναμονή αποτελέσματος του resolving και εμφάνιση των αντικειμένων στα σημεία των anchors αν το resolving ήταν επιτυχές
     private IEnumerator WaitForResolving(ResolveCloudAnchorPromise promise, int index)
     {
@@ -264,10 +267,12 @@ public class CloudAnchorManager : MonoBehaviour
         float elapsed = 0f;
 
         // Αναμονή απάντησης από του Servers
-        while (promise.State == PromiseState.Pending && elapsed < 60f)
+        while (promise.State == PromiseState.Pending && elapsed < 500f)
         {   
             elapsed += Time.deltaTime;
-            // Επιστρογή 
+            // Επιστροφή 
+            if (elapsed % 10f < Time.deltaTime) // κάθε 10 δευτερόλεπτα
+                Debug.LogError("Anchor " + index + " ακόμα Pending... " + elapsed.ToString("F0") + "s");
             yield return null;
         }
 
