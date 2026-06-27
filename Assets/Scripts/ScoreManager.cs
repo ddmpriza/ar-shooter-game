@@ -4,18 +4,16 @@ using UnityEngine;
 // Script διαχείρισης score
 public class ScoreManager : MonoBehaviour
 {
-    // Singleton-style access
     public static ScoreManager instance;
 
     // Current score
     int score = 0;
 
-    // Reference στο UI text
+    // Εμφάνηση text στο UI text
     public TMP_Text scoreText;
 
     void Awake()
     {
-        // Αποθηκεύουμε reference
         instance = this;
     }
 
@@ -24,7 +22,6 @@ public class ScoreManager : MonoBehaviour
     {
         // Αύξηση score
         score++;
-
         // Update UI
         scoreText.text = "Score: " + score;
     }

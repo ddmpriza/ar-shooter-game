@@ -3,14 +3,14 @@ using UnityEngine;
 // Script για collision detection
 public class BulletCollision : MonoBehaviour
 {
-    // Η function καλείται αυτόματα όταν γίνει collision
+    // Η function καλείται αυτόματα όταν γίνει collision (Collider και Rigidbody)
+    // Καλείται λόγω του ονοματός της function (OnCollisionEnter) και του τύπου παραμέτρου (Collision)
     void OnCollisionEnter(Collision collision)
     {
-        // Ελέγχουμε αν το αντικείμενο
-        // που χτυπήσαμε έχει tag "Target"
+        // Έλεγχος αν το αντικείμενο που χτυπήθηκε είναι "Target"/κυβάκι
         if (collision.gameObject.CompareTag("Target"))
         {
-            // Αυξάνουμε το score
+            // Αυξάνουμε το score κατά 1
             ScoreManager.instance.AddScore();
 
             // Καταστρέφουμε το target

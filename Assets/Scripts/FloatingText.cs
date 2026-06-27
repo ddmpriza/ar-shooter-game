@@ -6,16 +6,14 @@ public class FloatingText : MonoBehaviour
     // Ταχύτητα κίνησης προς τα πάνω
     public float moveSpeed = 50f;
 
-    // Χρόνος ζωής
+    // Χρόνος ζωής του text πριν φύγει απο την οθόνη
     public float lifeTime = 2f;
 
     RectTransform rectTransform;
 
     void Start()
     {
-        // Παίρνουμε το RectTransform
         rectTransform = GetComponent<RectTransform>();
-
         // Καταστροφή μετά από λίγα δευτερόλεπτα
         Destroy(gameObject, lifeTime);
     }
@@ -23,7 +21,9 @@ public class FloatingText : MonoBehaviour
     void Update()
     {
         // Μετακίνηση προς τα πάνω
-        rectTransform.anchoredPosition +=
-            Vector2.up * moveSpeed * Time.deltaTime;
+        // anchoredPosition: Θέση του text στο Canvas 
+        // Ανωδική κατεύθυνση (Vector2.up) 
+        // Κίνηση ανεξάρτητη από το frame rate/ταχύτητα επεξεργασίας συσκευής (Time.deltaTime - default 1/60 sec)
+        rectTransform.anchoredPosition += Vector2.up * moveSpeed * Time.deltaTime;
     }
 }
