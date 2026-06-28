@@ -7,7 +7,7 @@ using Google.XR.ARCoreExtensions;
 // Διαχειρστής για hosting και resolving cloud anchors
 // Υλοποίσηση δύο λειτουργιών: 
 // Hosting: Ο χρήστης τοποθετεί 2 anchors και τα ανεβάζει στο cloud
-// Resolving: Οι χρήστες προσπαθούν να βρουν τα anchors που έχουν ανεβείpublic class CloudAnchorManager : MonoBehaviour
+// Resolving: Οι χρήστες προσπαθούν να βρουν τα anchors που έχουν ανεβεί
 public class CloudAnchorManager : MonoBehaviour
 {
     public static CloudAnchorManager instance;
@@ -86,43 +86,52 @@ public class CloudAnchorManager : MonoBehaviour
             StartCoroutine(DelayedResolve()); // Για μελλοντικές συνεδρίες
         }
     }
-
-    // IEnumerator: Εμφάνιση των τιμών σταδιακά
     private IEnumerator DelayedResolve()
     {
-        Debug.LogError("=== DelayedResolve START ===");
-        // Αναμονή 3" - Αναμονή Αρχικοποίησης του AR Session
+        while (ARSession.state != ARSessionState.SessionTracking)
+        yield return null;
+
         yield return new WaitForSeconds(3f);
-
-        // Αν δεν υπάρχουν αποθηκευμένες θέσεις τοτε σταματάει η αναζητηση anchors
-        // PlayerPrefs: Μόνιμη αρχειοθέτηση θέσεων στην συσκευή
-        if (!PlayerPrefs.HasKey("A1x")) yield break;
-
-        // Ανάκτηση των αποθηκευμένων θέσεων και κλίσεων των δύο anchors
-        Vector3 pos1 = new Vector3(
-            PlayerPrefs.GetFloat("A1x"),
-            PlayerPrefs.GetFloat("A1y"),
-            PlayerPrefs.GetFloat("A1z"));
-
-        Vector3 pos2 = new Vector3(
-            PlayerPrefs.GetFloat("A2x"),
-            PlayerPrefs.GetFloat("A2y"),
-            PlayerPrefs.GetFloat("A2z"));
-
-        // Εμφάνιση των anchors στην αποθηκευμένη θέση
-        Instantiate(anchor1Prefab, pos1, Quaternion.identity);
-        Instantiate(anchor2Prefab, pos2, Quaternion.identity);
-
-        // Εμφάνιση των κουμπιών μόλις τοποθετηθούν τα αντικείμενα
-        startButton.SetActive(true);
-        shootButton.SetActive(true);
-        retryButton.SetActive(true);
         ResolveAnchors();
-        Debug.Log("Anchors spawned from saved positions!");
     }
+    // IEnumerator: Εμφάνιση των τιμών σταδιακά
+    // private IEnumerator DelayedResolve()
+    // {
+    //     Debug.LogError("=== DelayedResolve START ===");
+    //     Debug.LogError("StartHosting flag: " + PlayerPrefs.GetInt("StartHosting", 0));
 
-    // Ενεργοποίηση hosting λειτουργίας - καλείται από το MenuManager όταν ο χρήστης επιλέγει να ξεκινήσει 
-    // με InitializeCloudAnchors (δηλαδή να τοποθετήσει τα cloud anchors)
+    //     // Αναμονή 3" - Αναμονή Αρχικοποίησης του AR Session
+    //     yield return new WaitForSeconds(3f);
+
+    //     // Αν δεν υπάρχουν αποθηκευμένες θέσεις τοτε σταματάει η αναζητηση anchors
+    //     // PlayerPrefs: Μόνιμη αρχειοθέτηση θέσεων στην συσκευή
+    //     if (!PlayerPrefs.HasKey("A1x")) yield break;
+
+    //     // Ανάκτηση των αποθηκευμένων θέσεων και κλίσεων των δύο anchors
+    //     Vector3 pos1 = new Vector3(
+    //         PlayerPrefs.GetFloat("A1x"),
+    //         PlayerPrefs.GetFloat("A1y"),
+    //         PlayerPrefs.GetFloat("A1z"));
+
+    //     Vector3 pos2 = new Vector3(
+    //         PlayerPrefs.GetFloat("A2x"),
+    //         PlayerPrefs.GetFloat("A2y"),
+    //         PlayerPrefs.GetFloat("A2z"));
+
+    //     // Εμφάνιση των anchors στην αποθηκευμένη θέση
+    //     Instantiate(anchor1Prefab, pos1, Quaternion.identity);
+    //     Instantiate(anchor2Prefab, pos2, Quaternion.identity);
+
+    //     // Εμφάνιση των κουμπιών μόλις τοποθετηθούν τα αντικείμενα
+    //     startButton.SetActive(true);
+    //     shootButton.SetActive(true);
+    //     retryButton.SetActive(true);
+    //     ResolveAnchors();
+    //     Debug.Log("Anchors spawned from saved positions!");
+    // }
+
+    // // Ενεργοποίηση hosting λειτουργίας - καλείται από το MenuManager όταν ο χρήστης επιλέγει να ξεκινήσει 
+    // // με InitializeCloudAnchors (δηλαδή να τοποθετήσει τα cloud anchors)
     public void StartHosting()
     {
         isHosting = true;
@@ -247,7 +256,7 @@ public class CloudAnchorManager : MonoBehaviour
     // Χρήση σε νέες συνεδρίες όπου δεν γίνεται hosting.
     public void ResolveAnchors()
     {
-        Debug.LogError("=== DelayedResolve START ===");
+        Debug.Log("=== DelayedResolve START ===");
         // Ανάκτηση των αποθηκευμένων IDs των cloud anchors από τα PlayerPrefs
         string id1 = PlayerPrefs.GetString("CloudAnchorId1", "");
         string id2 = PlayerPrefs.GetString("CloudAnchorId2", "");
@@ -267,12 +276,17 @@ public class CloudAnchorManager : MonoBehaviour
         float elapsed = 0f;
 
         // Αναμονή απάντησης από του Servers
-        while (promise.State == PromiseState.Pending && elapsed < 500f)
-        {   
+        while (elapsed < 30f)
+        {
+            try
+            {
+                if (promise.State != PromiseState.Pending) break;
+            }
+            catch
+            {
+                break; // αν σκάσει το State, βγες από το loop
+            }
             elapsed += Time.deltaTime;
-            // Επιστροφή 
-            if (elapsed % 10f < Time.deltaTime) // κάθε 10 δευτερόλεπτα
-                Debug.LogError("Anchor " + index + " ακόμα Pending... " + elapsed.ToString("F0") + "s");
             yield return null;
         }
 
@@ -289,6 +303,28 @@ public class CloudAnchorManager : MonoBehaviour
             GameObject prefab = index == 1 ? anchor1Prefab : anchor2Prefab;
             Instantiate(prefab, promise.Result.Anchor.transform.position,
                                 promise.Result.Anchor.transform.rotation);
+        }
+        else
+        {
+            
+            Debug.LogError("Cloud resolve failed για anchor " + index + " — fallback σε local");
+            // Fallback στο PlayerPrefs
+            if (index == 1 && PlayerPrefs.HasKey("A1x"))
+            {
+                Vector3 pos = new Vector3(
+                    PlayerPrefs.GetFloat("A1x"),
+                    PlayerPrefs.GetFloat("A1y"),
+                    PlayerPrefs.GetFloat("A1z"));
+                Instantiate(anchor1Prefab, pos, Quaternion.identity);
+            }
+            else if (index == 2 && PlayerPrefs.HasKey("A2x"))
+            {
+                Vector3 pos = new Vector3(
+                    PlayerPrefs.GetFloat("A2x"),
+                    PlayerPrefs.GetFloat("A2y"),
+                    PlayerPrefs.GetFloat("A2z"));
+                Instantiate(anchor2Prefab, pos, Quaternion.identity);
+            }
         }
     }
 }
