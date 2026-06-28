@@ -13,11 +13,6 @@ public class PlaceObject : MonoBehaviour
     // λίστα για διατήρηση των hits από το raycast
     private List<ARRaycastHit> hits = new List<ARRaycastHit>();
 
-    // έλεγχος Gamemode/Placement state
-    private bool canPlace = false;
-    public void EnablePlacement() => canPlace = true;
-    public void DisablePlacement() => canPlace = false;
-
     void Update()
     {
         // Μόνο όταν το game ΔΕΝ έχει ξεκινήσει μπορούμε να τοποθετούμε objects

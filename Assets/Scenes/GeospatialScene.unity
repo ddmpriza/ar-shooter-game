@@ -230,7 +230,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 76566208}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b669738c1541cb14c98b0906fef29e66, type: 3}
   m_Name: 
@@ -244,7 +244,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 76566208}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8a4d48fc1548bf24a91dfcab4e06eea6, type: 3}
   m_Name: 
@@ -274,7 +274,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 76566208}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e9e72734f165288408ad1925aba38035, type: 3}
   m_Name: 
@@ -483,7 +483,6 @@ GameObject:
   - component: {fileID: 174343805}
   - component: {fileID: 174343804}
   - component: {fileID: 174343803}
-  - component: {fileID: 174343806}
   m_Layer: 0
   m_Name: AR Session
   m_TagString: Untagged
@@ -533,23 +532,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &174343806
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 174343802}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1b50ad3f5d9024549b0a549c5a03a084, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Google.XR.ARCoreExtensions::Google.XR.ARCoreExtensions.ARCoreExtensions
-  Session: {fileID: 174343804}
-  SessionOrigin: {fileID: 0}
-  CameraManager: {fileID: 180089666}
-  ARCoreExtensionsConfig: {fileID: 11400000, guid: 1e4eed25754cc0348b47e84b66acfaff, type: 2}
-  CameraConfigFilter: {fileID: 0}
 --- !u!1 &180089662
 GameObject:
   m_ObjectHideFlags: 0
@@ -1115,7 +1097,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NewMonoBehaviourScript
   earthManager: {fileID: 76566219}
   anchorManager: {fileID: 76566218}
-  modelPrefab: {fileID: 3862277631971027947, guid: 7ae956b4f54394e80818898d8f4d30c6, type: 3}
+  modelPrefab: {fileID: 919132149155446097, guid: 73ffbc06802a247cfb1b26f4ee67eba8, type: 3}
   statusText: {fileID: 1919020185}
   backButton: {fileID: 698540164}
 --- !u!4 &786129036

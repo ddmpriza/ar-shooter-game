@@ -30,6 +30,10 @@ public class ImageTrackingManager : MonoBehaviour
     // Μέσω μεταφοράς live video από την μπροστινή κάμερα της συσκευής στο RawImage (frontCameraDisplay)
     private WebCamTexture frontCamTexture;
 
+    private float hideTimer = 0f;
+    private const float HIDE_DELAY = 1.5f;
+    private bool shouldHide = false;
+
     void Awake()
     {
         // Εξάρτηση από το ARTrackedImageManager component που βρίσκεται στο ίδιο GameObject (XR Origin)
@@ -57,9 +61,24 @@ public class ImageTrackingManager : MonoBehaviour
         trackedImageManager.trackablesChanged.RemoveListener(OnTrackedImagesChanged);
     }
 
+    private void UpdateHideTimer()
+    {
+        if (shouldHide)
+        {
+            hideTimer -= Time.deltaTime;
+            if (hideTimer <= 0f)
+            {
+                HideAll();
+                shouldHide = false;
+                hideTimer = 0f;
+            }
+        }
+    }
+
     // Μέθοδος που καλείται κάθε φορά με την εναλλαγή των ανιχνευμένων εικόνων (προσθήκη, ενημέρωση, αφαίρεση)
     void OnTrackedImagesChanged(ARTrackablesChangedEventArgs<ARTrackedImage> eventArgs)
     {
+        UpdateHideTimer();
         // Εικόνες που ανιχνεύτηκαν για πρώτη φορά (προστέθηκαν)
         foreach (var trackedImage in eventArgs.added)
         {
@@ -69,8 +88,19 @@ public class ImageTrackingManager : MonoBehaviour
         // Εικόνες που ήδη ανιχνεύονται και ενημερώνεται η θέση τους (updated)
         foreach (var trackedImage in eventArgs.updated)
         {
-            HandleImage(trackedImage);
+            if (trackedImage.trackingState == TrackingState.Tracking)
+            {
+                shouldHide = false;
+                hideTimer = 0f;
+                HandleImage(trackedImage);
+            }
+            else
+            {
+                shouldHide = true;
+                hideTimer = HIDE_DELAY;
+            }
         }
+        
 
         // Εικόνες που δεν ανιχνεύονται πλέον (αφαιρέθηκαν)
         foreach (var trackedImage in eventArgs.removed)
@@ -136,11 +166,14 @@ public class ImageTrackingManager : MonoBehaviour
     {
         frontCameraPanel.SetActive(false);
         videoPanel.SetActive(false);
-        videoPlayer.Stop();
+        //videoPlayer.Stop();
         scorePanel.SetActive(false);
 
         // Ακόμα και αν η μπροστινή κάμερα δεν άνοιξε σωστά αλλά εκτελείται
         if (frontCamTexture != null && frontCamTexture.isPlaying)
             frontCamTexture.Stop();
+
+        if (videoPlayer != null && videoPlayer.isPlaying)
+            videoPlayer.Stop();
     }
 }

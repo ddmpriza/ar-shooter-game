@@ -86,6 +86,7 @@ public class CloudAnchorManager : MonoBehaviour
             StartCoroutine(DelayedResolve()); // Για μελλοντικές συνεδρίες
         }
     }
+
     private IEnumerator DelayedResolve()
     {
         while (ARSession.state != ARSessionState.SessionTracking)
@@ -94,41 +95,6 @@ public class CloudAnchorManager : MonoBehaviour
         yield return new WaitForSeconds(3f);
         ResolveAnchors();
     }
-    // IEnumerator: Εμφάνιση των τιμών σταδιακά
-    // private IEnumerator DelayedResolve()
-    // {
-    //     Debug.LogError("=== DelayedResolve START ===");
-    //     Debug.LogError("StartHosting flag: " + PlayerPrefs.GetInt("StartHosting", 0));
-
-    //     // Αναμονή 3" - Αναμονή Αρχικοποίησης του AR Session
-    //     yield return new WaitForSeconds(3f);
-
-    //     // Αν δεν υπάρχουν αποθηκευμένες θέσεις τοτε σταματάει η αναζητηση anchors
-    //     // PlayerPrefs: Μόνιμη αρχειοθέτηση θέσεων στην συσκευή
-    //     if (!PlayerPrefs.HasKey("A1x")) yield break;
-
-    //     // Ανάκτηση των αποθηκευμένων θέσεων και κλίσεων των δύο anchors
-    //     Vector3 pos1 = new Vector3(
-    //         PlayerPrefs.GetFloat("A1x"),
-    //         PlayerPrefs.GetFloat("A1y"),
-    //         PlayerPrefs.GetFloat("A1z"));
-
-    //     Vector3 pos2 = new Vector3(
-    //         PlayerPrefs.GetFloat("A2x"),
-    //         PlayerPrefs.GetFloat("A2y"),
-    //         PlayerPrefs.GetFloat("A2z"));
-
-    //     // Εμφάνιση των anchors στην αποθηκευμένη θέση
-    //     Instantiate(anchor1Prefab, pos1, Quaternion.identity);
-    //     Instantiate(anchor2Prefab, pos2, Quaternion.identity);
-
-    //     // Εμφάνιση των κουμπιών μόλις τοποθετηθούν τα αντικείμενα
-    //     startButton.SetActive(true);
-    //     shootButton.SetActive(true);
-    //     retryButton.SetActive(true);
-    //     ResolveAnchors();
-    //     Debug.Log("Anchors spawned from saved positions!");
-    // }
 
     // // Ενεργοποίηση hosting λειτουργίας - καλείται από το MenuManager όταν ο χρήστης επιλέγει να ξεκινήσει 
     // // με InitializeCloudAnchors (δηλαδή να τοποθετήσει τα cloud anchors)
@@ -243,7 +209,8 @@ public class CloudAnchorManager : MonoBehaviour
     {
         if (anchor1Prefab != null && localAnchors[0] != null)
             Instantiate(anchor1Prefab, localAnchors[0].transform.position,
-                        localAnchors[0].transform.rotation);
+                        localAnchors[0].transform.rotation 
+                        * Quaternion.Euler(0, 180, 0));
 
         if (anchor2Prefab != null && localAnchors[1] != null)
             Instantiate(anchor2Prefab, localAnchors[1].transform.position,
@@ -268,7 +235,8 @@ public class CloudAnchorManager : MonoBehaviour
             anchorManager.ResolveCloudAnchorAsync(id2), 2));
     }
 
-// Σημείωση:
+    // Σημείωση: Στην παρούσα συνάρτηση γίνεται προσπάθεια ανάκτησης των συντεταγμένων των anchors από το Cloud
+    // Αν ο χρόνος αναμονής υπερβεί τα 30" τότε οι θέσεις λαμβάνονται από τα δεδομένα της συσκευής
     // Αναμονή αποτελέσματος του resolving και εμφάνιση των αντικειμένων στα σημεία των anchors αν το resolving ήταν επιτυχές
     private IEnumerator WaitForResolving(ResolveCloudAnchorPromise promise, int index)
     {
@@ -280,21 +248,24 @@ public class CloudAnchorManager : MonoBehaviour
         {
             try
             {
+                // Promise: Ασύγχρονη διαδικασία 
+                // Αν το Promise έχει τιμή (δεν είναι Pending) βγαίνει από την επανάληψη πριν να περάσουν 30"
                 if (promise.State != PromiseState.Pending) break;
             }
             catch
             {
                 break; // αν σκάσει το State, βγες από το loop
             }
+            // χρονόμετρο για αναμονή 30"
             elapsed += Time.deltaTime;
             yield return null;
         }
 
         // Αρχικοποίηση της ευρεσης των anchors με Νone
         CloudAnchorState state = CloudAnchorState.None;
-        // Αν δεν βρέθηκαν anchors στα 60" τότε δεν εμφανίζει τίποτα
+        // Έλεγχος της απάντησης που λήφθηκε από το Cloud 
         try { state = promise.Result.CloudAnchorState; }
-        catch (System.Exception e) { Debug.LogError("Exception: " + e.GetType().Name + " - " + e.Message); }
+        catch { }
 
         // Αν βρέθηκαν anchors γίνεται αρχικοποίηση τους - Εμφανίζονται αρκιβώς εκεί που τοποθετήθηκαν κατά το hosting
         // Η πληροφορία ανακτάται από τους servers της Google και όχι από την αποθηκευμένη πληροφορία της συσκευής
@@ -304,6 +275,7 @@ public class CloudAnchorManager : MonoBehaviour
             Instantiate(prefab, promise.Result.Anchor.transform.position,
                                 promise.Result.Anchor.transform.rotation);
         }
+        // Αν δεν βρέθηκαν τα Anchors στα 30" τότε η πληροφορία τοποθέτησης στον χώρο λαμβάνεται από την συσκευή
         else
         {
             
