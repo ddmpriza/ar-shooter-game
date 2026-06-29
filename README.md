@@ -1,50 +1,84 @@
 # AR Shooter Game
 
-An augmented reality shooter game built with Unity and AR Foundation for Android.
+An Augmented Reality application for Android, developed in Unity 6 with AR Foundation and ARCore Extensions.  
+The project implements an AR game featuring Cloud Anchors, Geospatial API, Image Tracking, AR Light Estimation, and Depth API.
+
+**Test Device:** Nokia 8 / Android 9  
+
+---
+
+## Technologies
+
+| Technology | Version |
+|---|---|
+| Unity | 6 (6000.4.0b11) |
+| AR Foundation | 6.4.3 |
+| ARCore Extensions | 1.54.0 |
+| Target SDK | Android 9 (API 28) |
+
+---
+
+## Scenes
+
+| Scene | Description |
+|---|---|
+| `MyARGame` | Main menu — Game, Initialize Anchors, Geospatial |
+| `SampleScene` | Main game + Cloud Anchors |
+| `GeospatialScene` | Geospatial API — displays a 3D model at a real-world GPS location |
+
+---
 
 ## Features
 
-- **Place Objects**: Tap on detected planes to place 3D cubes in AR space
-- **Scale Objects**: Select an object and swipe up/down to resize it
-- **Shoot Bullets**: Fire physics-based bullets to hit placed objects
-- **Score System**: Score increases with each successful hit
-- **Image Tracking**: Detects 3 reference images and displays corresponding content
-- **Cloud Anchors**: Persistent AR anchors stored in Google Cloud
+### AR Game
+- Place target cubes on AR planes using touch
+- Scale objects with swipe gestures
+- Shoot bullets with physics (Rigidbody)
+- Score system with floating text animation
+- Game state management (Start / End / Restart)
 
-## Requirements
+### Cloud Anchors
+- **Hosting:** Place 2 anchors (RobotKyle + GlossyObject) and upload to Google Cloud
+- **Resolving:** Automatic resolve on app start — waits up to 30 seconds
+- **PlayerPrefs Fallback:** If Cloud resolve fails, objects are placed using locally stored coordinates
 
-- Android device with ARCore support
-- Android 9.0 (API level 28) or higher
-- Google Play Services for AR installed
+### Geospatial API
+- GPS tracking via AREarthManager
+- Distance calculation using the Haversine formula
+- Spawns Kyle at a target location in Thessaloniki when the user is within 100m
+- **Geospatial Anchor Fallback:** If the device does not support Geospatial Anchors, the model is placed 2m in front of the camera
 
-## How to Play
+### Image Tracking
+- **front_camera:** Detected image → displays live front camera feed
+- **score:** Detected image → displays current score panel
+- **video:** Detected image → plays an mp4 video
+- Timer-based hide (1.5s delay) to handle ARCore tracking flicker
 
-1. Open the app and select **Game** from the main menu
-2. Scan a flat surface until planes are detected
-3. Tap on detected planes to place target cubes
-4. Select a cube and swipe to scale it
-5. Press **Start Game** to begin shooting
-6. Press **Shoot** to fire bullets at the cubes
-7. Hit as many cubes as possible to increase your score
-8. Press **Retry** to restart
+### AR Light Estimation
+- Automatically updates the Directional Light based on real-world lighting conditions
+- Adjusts brightness, color temperature, and light direction
+- Custom HLSL ShadowReceiver shader for casting shadows on AR planes
 
-## Cloud Anchors Setup
+### 🔍 Depth API (Occlusion)
+- AROcclusionManager for occluding AR objects behind real-world surfaces
+- Graceful fallback for devices without Depth API support
 
-1. From the main menu, press **Initialize Cloud Anchors**
-2. Scan a horizontal surface
-3. Tap twice to place 2 anchors in the environment
-4. Re-enter the game to see the anchors resolved
+---
 
-## Image Tracking
+## Scripts
 
-Point the camera at one of the following images:
-- **Among Us** → displays front camera feed
-- **YouTube Logo** → plays a video
-- **Olympic Rings** → displays current score
-
-## Built With
-
-- Unity 6
-- AR Foundation 6.4.3
-- Google ARCore Extensions
-- TextMeshPro
+| Script | Description |
+|---|---|
+| `CloudAnchorManager.cs` | Cloud Anchor hosting/resolving, PlayerPrefs fallback |
+| `GeospatialManager.cs` | GPS tracking, Haversine distance, Geospatial Anchor placement |
+| `ImageTrackingManager.cs` | Image tracking, WebCamTexture, VideoPlayer |
+| `ARLightEstimation.cs` | AR Light Estimation, Directional Light updates |
+| `PlaceObject.cs` | Place objects on AR planes |
+| `ScaleObject.cs` | Scale objects with swipe |
+| `BulletShooter.cs` | Shoot bullets |
+| `BulletCollision.cs` | Collision detection, destroy targets |
+| `FloatingText.cs` | Floating UI text animation |
+| `ScoreManager.cs` | Score management |
+| `GameStateManager.cs` | Game state management |
+| `MenuManager.cs` | Scene navigation |
+| `SceneLoader.cs` | Load menu scene |
