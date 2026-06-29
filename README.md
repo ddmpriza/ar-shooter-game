@@ -59,7 +59,7 @@ The project implements an AR game featuring Cloud Anchors, Geospatial API, Image
 - Adjusts brightness, color temperature, and light direction
 - Custom HLSL ShadowReceiver shader for casting shadows on AR planes
 
-### 🔍 Depth API (Occlusion)
+### Depth API (Occlusion)
 - AROcclusionManager for occluding AR objects behind real-world surfaces
 - Graceful fallback for devices without Depth API support
 
