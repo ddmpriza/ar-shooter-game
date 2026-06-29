@@ -51,7 +51,7 @@ public class PlaceObject : MonoBehaviour
             // Λήψη της πρώτης θέσης από τα hits/ πιο κοντινή θέση + κλίση του επιπέδου
             Pose hitPose = hits[0].pose;
             // Τοποθέτηση αντικειμένου 
-            Vector3 spawnPos = hitPose.position + Vector3.up * 0.1f;
+            Vector3 spawnPos = hitPose.position;
             // Δημιουργία αντίγραφου του αντικειμένου στην επιλεγμένη θέση με την ίδια κλίση του hitPose
             Instantiate(objectToPlace, spawnPos, hitPose.rotation);
         }

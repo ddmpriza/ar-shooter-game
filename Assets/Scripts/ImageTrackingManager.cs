@@ -123,6 +123,8 @@ public class ImageTrackingManager : MonoBehaviour
                 frontCamTexture = new WebCamTexture(device.name);
                 // Σύνδεση της μπροστινής κάμερας στο RawImage (frontCameraDisplay) μέσω WebCamTexture
                 frontCameraDisplay.texture = frontCamTexture;
+                // Περιστροφή της κάμερας κατα 90 μοίρες για να ειναι στην ευθεια
+                frontCameraDisplay.transform.localRotation = Quaternion.Euler(0, 0, 90f);
                 // Εκκίνηση της αναπαραγωγής της μπροστινής κάμερας
                 frontCamTexture.Play();
                 // Αν ξεκινήσει η εγγραφή της μπροστινής κάμερας, σταματάει η αναζήτηση για άλλες κάμερες
